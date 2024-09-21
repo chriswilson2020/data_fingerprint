@@ -36,7 +36,7 @@ def detect_decimal_separator(file_path, delimiter):
             detected_decimal = ','
         else:
             detected_decimal = '.'
-        print(f"Detected decimal separator: '{detected_decimal}'")
+        #print(f"Detected decimal separator: '{detected_decimal}'")
         return detected_decimal
 
 def load_data(file_path):
@@ -56,58 +56,58 @@ def load_data(file_path):
                 try:
                     dialect = sniffer.sniff(sample, delimiters=[',', ';', '\t', '|'])
                     delimiter = dialect.delimiter
-                    print(f"Detected delimiter: '{delimiter}'")
+                    #print(f"Detected delimiter: '{delimiter}'")
                 except csv.Error:
                     # Default to comma if Sniffer fails
                     delimiter = ','
-                    print("Could not detect delimiter. Defaulting to comma.")
+                    #print("Could not detect delimiter. Defaulting to comma.")
 
             # Detect decimal separator
             decimal_sep = detect_decimal_separator(file_path, delimiter)
 
             # Read the CSV with the detected delimiter and decimal separator
             df = pd.read_csv(file_path, delimiter=delimiter, decimal=decimal_sep)
-            print(f"Loaded CSV with '{delimiter}' as delimiter and '{decimal_sep}' as decimal separator.")
+            #print(f"Loaded CSV with '{delimiter}' as delimiter and '{decimal_sep}' as decimal separator.")
         elif ext in ['.xlsx', '.xls']:
             df = pd.read_excel(file_path, decimal=',')
-            print("Loaded Excel file.")
+            #print("Loaded Excel file.")
         elif ext == '.json':
             df = pd.read_json(file_path, convert_dates=False)
-            print("Loaded JSON file.")
+            #print("Loaded JSON file.")
         elif ext == '.parquet':
             df = pd.read_parquet(file_path)
-            print("Loaded Parquet file.")
+            #print("Loaded Parquet file.")
         elif ext == '.feather':
             df = pd.read_feather(file_path)
-            print("Loaded Feather file.")
+            #print("Loaded Feather file.")
         elif ext in ['.h5', '.hdf', '.hdf5']:
             df = pd.read_hdf(file_path)
-            print("Loaded HDF5 file.")
+            #print("Loaded HDF5 file.")
         elif ext in ['.pkl', '.pickle']:
             df = pd.read_pickle(file_path)
-            print("Loaded Pickle file.")
+            #print("Loaded Pickle file.")
         elif ext == '.dta':
             df = pd.read_stata(file_path)
-            print("Loaded Stata file.")
+            #print("Loaded Stata file.")
         elif ext == '.sas7bdat':
             df = pd.read_sas(file_path) # I can't test this without sas so I need help
-            print("Loaded SAS file.")
+            #print("Loaded SAS file.")
         elif ext == '.sav':
             df = pd.read_spss(file_path)
-            print("Loaded SPSS file.")
+            #print("Loaded SPSS file.")
         elif ext == '.xml':
             df = pd.read_xml(file_path)
-            print("Loaded XML file.")
+            #print("Loaded XML file.")
         elif ext == '.html':
             df_list = pd.read_html(file_path)
             if df_list:
                 df = df_list[0]
-                print("Loaded HTML file.")
+                #print("Loaded HTML file.")
             else:
                 raise ValueError("No tables found in HTML file.")
         else:
             # If extension is unknown, try to load it using common formats
-            print("Unknown file extension. Attempting to read the file in common formats...")
+            #print("Unknown file extension. Attempting to read the file in common formats...")
             df = try_loading_with_guesses(file_path)
     except Exception as e:
         print(f"Error loading file based on extension: {e}")
@@ -115,8 +115,6 @@ def load_data(file_path):
         df = try_loading_with_guesses(file_path)
     if df is None:
         raise ValueError("Could not read the data file in any known format.")
-
-    print(df.head())
     return df
 
 def try_loading_with_guesses(file_path):
@@ -148,7 +146,7 @@ def try_loading_with_guesses(file_path):
             else:
                 df = loader(file_path)
             if df is not None:
-                print(f"Successfully loaded file as {format_name}.")
+                #print(f"Successfully loaded file as {format_name}.")
                 return df
         except Exception as e:
             print(f"Failed to load file as {format_name}: {e}")
@@ -186,7 +184,7 @@ def standardize_datetime_columns(df, date_only=False):
                     parsed_col = pd.to_datetime(df[col], format=fmt, errors='raise')
                     df[col] = parsed_col
                     potential_datetime_cols.append(col)
-                    print(f"Parsed '{col}' as datetime with format '{fmt}'.")
+                    #print(f"Parsed '{col}' as datetime with format '{fmt}'.")
                     break  # Stop if parsing is successful
                 except Exception:
                     continue
@@ -196,7 +194,7 @@ def standardize_datetime_columns(df, date_only=False):
             if parsed_col.notnull().mean() >= 0.8:
                 df[col] = parsed_col
                 potential_datetime_cols.append(col)
-                print(f"Parsed '{col}' as datetime using default inference.")
+                #print(f"Parsed '{col}' as datetime using default inference.")
 
     # Combine detected datetime columns
     datetime_cols.extend(potential_datetime_cols)
@@ -206,8 +204,7 @@ def standardize_datetime_columns(df, date_only=False):
     date_format = '%Y-%m-%d' if date_only else '%Y-%m-%d %H:%M:%S'
     for col in datetime_cols:
         df[col] = df[col].dt.strftime(date_format)
-        print(f"Standardized datetime column: {col}")
-
+        #print(f"Standardized datetime column: {col}")
     return df
 
 def generate_order_dependent_fingerprint(df):
