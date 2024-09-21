@@ -30,7 +30,7 @@ A Python script to generate unique fingerprints for datasets, supporting multipl
 |File Format| Validation Status|Notes|
 |---|---|---|
 |.csv|Validated|All Pass|
-|.xlsx|Partial Validation|Fails Mixed Date Formats (Expected behaviour)|
+|.xlsx|Validated|All Pass|
 |.json|Validated|All Pass|
 |.xml|Partial Validation|Fails without header and unusual delimiter (Expected behaviour)|
 |.html|Fails Validation|Fails Mixed Date Formats|
