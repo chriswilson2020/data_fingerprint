@@ -220,6 +220,12 @@ Pyreadstat Documentation
 
 ### Changelog
 
+#### v1.5 
+First release candidate of the module. 
+Updated and included object type enforcement to enable proprieatary formats to validate. 
+XML will validate in all cases but a malformed xml will produce an incorect fingerprint. This will be fixed in a future release
+HTML with mixed dates does not produce a correct fingerprint. This might be fixed depending on demand.
+
 #### v1.1
 Updated installation instructions to include additional dependencies.
 Improved file format support by adding required packages.
