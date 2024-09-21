@@ -25,6 +25,22 @@ A Python script to generate unique fingerprints for datasets, supporting multipl
 * XML
 * HTML
 
+#### Validation Status:
+
+|File Format| Validation Status|Notes|
+|---|---|---|
+|.csv|Validated|All Pass|
+|.xlsx|Fails Validation|Fails Mixed Date Formats (Expected behaviour)|
+|.json|Validated|All Pass|
+|.xml|Fails Validation|Fails without header and unusual delimiter (Expected behaviour)|
+|.html|Fails Validation|Fails Mixed Date Formats|
+|.h5|Fails Validation|Standard CSV (need to check file generation probably not a real fail) and Missing Data|
+|.dta|Fails Validation|Standard CSV (need to check file generation probably not a real fail) and Missing Data|
+|.feather|Fails Validation|Standard CSV (need to check file generation probably not a real fail) and Missing Data|
+|.parquet|Fails Validation|Standard CSV (need to check file generation probably not a real fail) and Missing Data|
+|.pkl|Fails Validation|Standard CSV (need to check file generation probably not a real fail) and Missing Data|
+
+
 ### Installation:
 
 #### Prerequisites:
