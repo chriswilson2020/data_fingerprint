@@ -5,6 +5,24 @@ import os
 import csv
 import warnings
 
+def detect_delimiter(file_path):
+    """
+    Detects the delimiter used in a CSV file by sampling the first few lines.
+    """
+    with open(file_path, 'r', encoding='utf-8') as csvfile:
+        sample = csvfile.read(2048)
+        # Use Sniffer to detect the delimiter
+        sniffer = csv.Sniffer()
+        try:
+            dialect = sniffer.sniff(sample, delimiters=[',', ';', '\t', '|'])
+            delimiter = dialect.delimiter
+            #print(f"Detected delimiter: '{delimiter}'")
+        except csv.Error:
+            # Default to comma if Sniffer fails
+            delimiter = ','
+            #print("Could not detect delimiter. Defaulting to comma.")
+    return delimiter
+
 def detect_decimal_separator(file_path, delimiter):
     """
     Detects the decimal separator in a CSV file by sampling numeric data.
@@ -23,19 +41,16 @@ def detect_decimal_separator(file_path, delimiter):
                 break
             if row:
                 for value in row:
-                    # Remove any non-digit characters except decimal separators
+                    # Remove non-digit characters except decimal separators
                     value_no_sep = ''.join(c for c in value if c.isdigit() or c in decimal_separators)
+                    # Check for decimal separators
                     for sep in decimal_separators:
                         if sep in value_no_sep:
-                            # Count decimal separators that are not thousands separators
                             parts = value_no_sep.split(sep)
                             if len(parts) == 2 and all(part.isdigit() for part in parts):
                                 decimal_counts[sep] += 1
         # Determine the most frequent decimal separator
-        if decimal_counts[','] > decimal_counts['.']:
-            detected_decimal = ','
-        else:
-            detected_decimal = '.'
+        detected_decimal = max(decimal_counts, key=decimal_counts.get)
         #print(f"Detected decimal separator: '{detected_decimal}'")
         return detected_decimal
 
@@ -48,28 +63,15 @@ def load_data(file_path):
     ext = ext.lower()
     try:
         if ext == '.csv':
-            # Read a sample of the file to detect the delimiter
-            with open(file_path, 'r', encoding='utf-8') as csvfile:
-                sample = csvfile.read(2048)
-                # Use Sniffer to detect the delimiter
-                sniffer = csv.Sniffer()
-                try:
-                    dialect = sniffer.sniff(sample, delimiters=[',', ';', '\t', '|'])
-                    delimiter = dialect.delimiter
-                    #print(f"Detected delimiter: '{delimiter}'")
-                except csv.Error:
-                    # Default to comma if Sniffer fails
-                    delimiter = ','
-                    #print("Could not detect delimiter. Defaulting to comma.")
-
+            # Detect delimiter
+            delimiter = detect_delimiter(file_path)
             # Detect decimal separator
             decimal_sep = detect_decimal_separator(file_path, delimiter)
-
             # Read the CSV with the detected delimiter and decimal separator
             df = pd.read_csv(file_path, delimiter=delimiter, decimal=decimal_sep)
             #print(f"Loaded CSV with '{delimiter}' as delimiter and '{decimal_sep}' as decimal separator.")
         elif ext in ['.xlsx', '.xls']:
-            df = pd.read_excel(file_path, decimal=',')
+            df = pd.read_excel(file_path)
             #print("Loaded Excel file.")
         elif ext == '.json':
             df = pd.read_json(file_path, convert_dates=False)
@@ -90,7 +92,7 @@ def load_data(file_path):
             df = pd.read_stata(file_path)
             #print("Loaded Stata file.")
         elif ext == '.sas7bdat':
-            df = pd.read_sas(file_path) # I can't test this without sas so I need help
+            df = pd.read_sas(file_path)
             #print("Loaded SAS file.")
         elif ext == '.sav':
             df = pd.read_spss(file_path)
@@ -115,6 +117,8 @@ def load_data(file_path):
         df = try_loading_with_guesses(file_path)
     if df is None:
         raise ValueError("Could not read the data file in any known format.")
+
+    #print(df.head())
     return df
 
 def try_loading_with_guesses(file_path):
@@ -142,7 +146,7 @@ def try_loading_with_guesses(file_path):
                 # Use default delimiter and decimal
                 df = pd.read_csv(file_path)
             elif format_name == "Excel":
-                df = pd.read_excel(file_path, decimal=',')
+                df = pd.read_excel(file_path)
             else:
                 df = loader(file_path)
             if df is not None:
@@ -171,7 +175,11 @@ def standardize_datetime_columns(df, date_only=False):
         '%Y-%m-%d %H:%M',
         '%d-%m-%Y %H:%M',
         '%Y-%m-%d',
-        '%d-%m-%Y'
+        '%d-%m-%Y',
+        '%m/%d/%Y %H:%M:%S',
+        '%m/%d/%Y %H:%M',
+        '%d/%m/%Y %H:%M:%S',
+        '%d/%m/%Y %H:%M'
     ]
 
     # Attempt to parse object columns as datetime
@@ -205,6 +213,7 @@ def standardize_datetime_columns(df, date_only=False):
     for col in datetime_cols:
         df[col] = df[col].dt.strftime(date_format)
         #print(f"Standardized datetime column: {col}")
+
     return df
 
 def generate_order_dependent_fingerprint(df):
