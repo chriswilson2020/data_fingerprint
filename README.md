@@ -27,21 +27,28 @@ A Python script to generate unique fingerprints for datasets, supporting multipl
 
 #### Validation Status:
 
+##### Each file format is validated against five different senarios:
+
+1. Standard csv file with `'` delimiter and `.` as decimal separator
+2. European style csv file with `;` delimiter and `,` decimal separator
+3. Mixed date formats throughout the file
+4. Missing data points distribtuted throughout the file
+5. No headers on the columns and a strange delimiter `^`
+
 |File Format| Validation Status|Notes|
 |---|---|---|
 |.csv|Validated|All Pass|
 |.xlsx|Validated|All Pass|
 |.json|Validated|All Pass|
-|.xml|Partial Validation|Fails without header and unusual delimiter (Expected behaviour)|
+|.xml|Partial Validation|Fails without header (Expected behaviour)|
 |.html|Fails Validation|Fails Mixed Date Formats|
-|.h5|Fails Validation|Standard CSV (need to check file generation probably not a real fail) and Missing Data|
-|.dta|Fails Validation|Standard CSV (need to check file generation probably not a real fail) and Missing Data|
-|.feather|Fails Validation|Standard CSV (need to check file generation probably not a real fail) and Missing Data|
-|.parquet|Fails Validation|Standard CSV (need to check file generation probably not a real fail) and Missing Data|
-|.pkl|Fails Validation|Standard CSV (need to check file generation probably not a real fail) and Missing Data|
+|.h5|Fails Validation|All Pass|
+|.dta|Fails Validation|All Pass|
+|.feather|Fails Validation|All Pass|
+|.parquet|Fails Validation|All Pass|
+|.pkl|Fails Validation|All Pass|
 
-*Note: .xlsx and .xml fail due to expected behaviours of the file format use with caution*
-*i.e. mixed data formats and no headers resulting in readable but not valid files*
+*Note: .xml fails due to expected behaviours of the file format use with caution*
 
 ### Installation:
 
