@@ -16,11 +16,11 @@ def detect_delimiter(file_path):
         try:
             dialect = sniffer.sniff(sample, delimiters=[',', ';', '\t', '|'])
             delimiter = dialect.delimiter
-            #print(f"Detected delimiter: '{delimiter}'")
+           # print(f"Detected delimiter: '{delimiter}'")
         except csv.Error:
             # Default to comma if Sniffer fails
             delimiter = ','
-            #print("Could not detect delimiter. Defaulting to comma.")
+            print("Could not detect delimiter. Defaulting to comma.")
     return delimiter
 
 def detect_decimal_separator(file_path, delimiter):
@@ -51,8 +51,37 @@ def detect_decimal_separator(file_path, delimiter):
                                 decimal_counts[sep] += 1
         # Determine the most frequent decimal separator
         detected_decimal = max(decimal_counts, key=decimal_counts.get)
-        #print(f"Detected decimal separator: '{detected_decimal}'")
+        # print(f"Detected decimal separator: '{detected_decimal}'")
         return detected_decimal
+
+def enforce_data_types(df):
+    """
+    Enforces consistent data types on the DataFrame.
+    """
+    # Define the expected data types
+    expected_dtypes = {
+        'Name': 'object',
+        'Date': 'object',  # Will be parsed later
+        'Value': 'float64',
+        'Description': 'object'
+    }
+
+    # Convert columns to expected data types if they exist in the DataFrame
+    for col, dtype in expected_dtypes.items():
+        if col in df.columns:
+            if dtype == 'float64':
+                # Replace decimal commas with dots in the column
+                # Use pd.to_numeric with errors='coerce' to handle invalid values
+                df[col] = pd.to_numeric(
+                    df[col].astype(str).str.replace(',', '.').str.strip(),
+                    errors='coerce'
+                )
+            else:
+                df[col] = df[col].astype(dtype)
+
+    return df
+
+
 
 def load_data(file_path):
     """
@@ -69,47 +98,47 @@ def load_data(file_path):
             decimal_sep = detect_decimal_separator(file_path, delimiter)
             # Read the CSV with the detected delimiter and decimal separator
             df = pd.read_csv(file_path, delimiter=delimiter, decimal=decimal_sep)
-            #print(f"Loaded CSV with '{delimiter}' as delimiter and '{decimal_sep}' as decimal separator.")
+            # print(f"Loaded CSV with '{delimiter}' as delimiter and '{decimal_sep}' as decimal separator.")
         elif ext in ['.xlsx', '.xls']:
             df = pd.read_excel(file_path)
-            #print("Loaded Excel file.")
+            # print("Loaded Excel file.")
         elif ext == '.json':
             df = pd.read_json(file_path, convert_dates=False)
-            #print("Loaded JSON file.")
+            # print("Loaded JSON file.")
         elif ext == '.parquet':
             df = pd.read_parquet(file_path)
-            #print("Loaded Parquet file.")
+            # print("Loaded Parquet file.")
         elif ext == '.feather':
             df = pd.read_feather(file_path)
-            #print("Loaded Feather file.")
+            # print("Loaded Feather file.")
         elif ext in ['.h5', '.hdf', '.hdf5']:
             df = pd.read_hdf(file_path)
-            #print("Loaded HDF5 file.")
+            # print("Loaded HDF5 file.")
         elif ext in ['.pkl', '.pickle']:
             df = pd.read_pickle(file_path)
-            #print("Loaded Pickle file.")
+            # print("Loaded Pickle file.")
         elif ext == '.dta':
             df = pd.read_stata(file_path)
-            #print("Loaded Stata file.")
+            # print("Loaded Stata file.")
         elif ext == '.sas7bdat':
             df = pd.read_sas(file_path)
-            #print("Loaded SAS file.")
+            # print("Loaded SAS file.")
         elif ext == '.sav':
             df = pd.read_spss(file_path)
-            #print("Loaded SPSS file.")
+            # print("Loaded SPSS file.")
         elif ext == '.xml':
             df = pd.read_xml(file_path)
-            #print("Loaded XML file.")
+            # print("Loaded XML file.")
         elif ext == '.html':
             df_list = pd.read_html(file_path)
             if df_list:
                 df = df_list[0]
-                #print("Loaded HTML file.")
+                # print("Loaded HTML file.")
             else:
                 raise ValueError("No tables found in HTML file.")
         else:
             # If extension is unknown, try to load it using common formats
-            #print("Unknown file extension. Attempting to read the file in common formats...")
+            # print("Unknown file extension. Attempting to read the file in common formats...")
             df = try_loading_with_guesses(file_path)
     except Exception as e:
         print(f"Error loading file based on extension: {e}")
@@ -118,7 +147,9 @@ def load_data(file_path):
     if df is None:
         raise ValueError("Could not read the data file in any known format.")
 
-    #print(df.head())
+    # Enforce data types
+    df = enforce_data_types(df)
+    # print(df.head())
     return df
 
 def try_loading_with_guesses(file_path):
@@ -150,7 +181,7 @@ def try_loading_with_guesses(file_path):
             else:
                 df = loader(file_path)
             if df is not None:
-                #print(f"Successfully loaded file as {format_name}.")
+                # print(f"Successfully loaded file as {format_name}.")
                 return df
         except Exception as e:
             print(f"Failed to load file as {format_name}: {e}")
@@ -192,7 +223,7 @@ def standardize_datetime_columns(df, date_only=False):
                     parsed_col = pd.to_datetime(df[col], format=fmt, errors='raise')
                     df[col] = parsed_col
                     potential_datetime_cols.append(col)
-                    #print(f"Parsed '{col}' as datetime with format '{fmt}'.")
+                    # print(f"Parsed '{col}' as datetime with format '{fmt}'.")
                     break  # Stop if parsing is successful
                 except Exception:
                     continue
@@ -202,7 +233,7 @@ def standardize_datetime_columns(df, date_only=False):
             if parsed_col.notnull().mean() >= 0.8:
                 df[col] = parsed_col
                 potential_datetime_cols.append(col)
-                #print(f"Parsed '{col}' as datetime using default inference.")
+                # print(f"Parsed '{col}' as datetime using default inference.")
 
     # Combine detected datetime columns
     datetime_cols.extend(potential_datetime_cols)
@@ -212,7 +243,36 @@ def standardize_datetime_columns(df, date_only=False):
     date_format = '%Y-%m-%d' if date_only else '%Y-%m-%d %H:%M:%S'
     for col in datetime_cols:
         df[col] = df[col].dt.strftime(date_format)
-        #print(f"Standardized datetime column: {col}")
+        # print(f"Standardized datetime column: {col}")
+
+    return df
+
+def standardize_dataframe(df):
+    """
+    Applies standardization steps to the DataFrame, similar to the fingerprinting functions.
+    """
+    # Enforce data types
+    df = enforce_data_types(df)
+
+    # Standardize datetime columns
+    df = standardize_datetime_columns(df)
+
+    # Ensure consistent column order
+    df = df.reindex(sorted(df.columns), axis=1)
+
+    # Reset index
+    df = df.reset_index(drop=True)
+
+    # Strip whitespace from string columns
+    string_cols = df.select_dtypes(include=['object']).columns
+    df[string_cols] = df[string_cols].apply(lambda x: x.str.strip())
+
+    # Round numeric columns
+    numeric_cols = df.select_dtypes(include=['float64', 'float32', 'int64', 'int32']).columns
+    df[numeric_cols] = df[numeric_cols].round(6)
+
+    # Fill NaN values and convert all data to strings
+    df = df.fillna('').astype(str)
 
     return df
 
@@ -220,22 +280,32 @@ def generate_order_dependent_fingerprint(df):
     """
     Generates an order-dependent fingerprint of the DataFrame.
     """
+    # Enforce data types
+    df = enforce_data_types(df)
+
     # Standardize datetime columns
     df = standardize_datetime_columns(df)
+
     # Ensure consistent column order
     df = df.reindex(sorted(df.columns), axis=1)
+
     # Reset index
     df = df.reset_index(drop=True)
+
     # Strip whitespace from string columns
     string_cols = df.select_dtypes(include=['object']).columns
     df[string_cols] = df[string_cols].apply(lambda x: x.str.strip())
+
     # Round numeric columns
     numeric_cols = df.select_dtypes(include=['float64', 'float32', 'int64', 'int32']).columns
     df[numeric_cols] = df[numeric_cols].round(6)
+
     # Convert all data to strings
     df = df.fillna('').astype(str)
+
     # Serialize data without index and header
     data_string = df.to_csv(index=False, header=False, lineterminator='\n')
+
     # Hash the serialized data using SHA-256
     hash_object = hashlib.sha256(data_string.encode('utf-8'))
     fingerprint = hash_object.hexdigest()
@@ -245,27 +315,39 @@ def generate_order_independent_fingerprint(df):
     """
     Generates an order-independent fingerprint of the DataFrame.
     """
+    # Enforce data types
+    df = enforce_data_types(df)
+
     # Standardize datetime columns
     df = standardize_datetime_columns(df)
+
     # Reset index and sort columns to ensure consistent order
     df = df.reindex(sorted(df.columns), axis=1)
     df = df.reset_index(drop=True)
+
     # Strip whitespace from string columns
     string_cols = df.select_dtypes(include=['object']).columns
     df[string_cols] = df[string_cols].apply(lambda x: x.str.strip())
+
     # Round numeric columns
     numeric_cols = df.select_dtypes(include=['float64', 'float32', 'int64', 'int32']).columns
     df[numeric_cols] = df[numeric_cols].round(6)
+
     # Handle NaN values and convert all data to strings
     df = df.fillna('').astype(str)
+
     # Serialize each row into a string
     row_strings = df.apply(lambda row: ','.join(row.values), axis=1)
+
     # Hash each row individually
     row_hashes = row_strings.apply(lambda x: hashlib.sha256(x.encode('utf-8')).hexdigest())
+
     # Sort row hashes to ensure order-independence
     row_hashes = sorted(row_hashes)
+
     # Concatenate all row hashes
     concatenated_hashes = ''.join(row_hashes)
+
     # Generate final fingerprint
     final_hash = hashlib.sha256(concatenated_hashes.encode('utf-8')).hexdigest()
     return final_hash
@@ -285,29 +367,3 @@ def process_file_with_order_independent_fingerprint(file_path):
     df = load_data(file_path)
     fingerprint = generate_order_independent_fingerprint(df)
     return fingerprint
-
-def main():
-    print("Select fingerprinting mode:")
-    print("1. Order-Dependent")
-    print("2. Order-Independent")
-    choice = input("Enter your choice (1 or 2): ")
-    if choice not in ['1', '2']:
-        print("Invalid choice.")
-        sys.exit(1)
-    file_path = input("Enter the file path of the dataset: ").strip()
-    if not os.path.exists(file_path):
-        print("File does not exist.")
-        sys.exit(1)
-    try:
-        if choice == '1':
-            fingerprint = process_file_with_order_dependent_fingerprint(file_path)
-            print("Order-dependent fingerprint:", fingerprint)
-        else:
-            fingerprint = process_file_with_order_independent_fingerprint(file_path)
-            print("Order-independent fingerprint:", fingerprint)
-    except Exception as e:
-        print("Error processing file:", e)
-        sys.exit(1)
-
-if __name__ == "__main__":
-    main()
