@@ -1,0 +1,51 @@
+Name|Date|Value|Description
+Alice|2023-01-01 08:15:00|123.45|Test data
+Bob||678.90|
+Charlie|2023-01-03 10:45:00||Example data
+David|2023-01-04 11:00:00|345.67|
+|2023-01-05 12:15:00|456.78|Sample data
+Frank|||
+Grace|2023-01-07 14:45:00|678.90|Test data
+||789.01|Sample data
+Ivan|2023-01-09 16:15:00||Example data
+Judy|2023-01-10 17:30:00|901.23|
+Ken||12.34|Sample data
+Leo|2023-01-12 19:00:00|23.45|
+|||
+Mallory|2023-01-13 20:15:00|34.56|Test data
+Nina||45.67|Sample data
+Oscar|2023-01-15 22:45:00||Example data
+|2023-01-16 23:00:00|67.89|Test data
+Quinn|2023-01-17 00:15:00|78.90|
+Rick||89.01|Example data
+Sam|2023-01-19 02:45:00||Test data
+||90.12|Sample data
+Trudy|2023-01-20 03:00:00|101.23|
+Uma|2023-01-21 04:15:00||Example data
+Victor||123.45|Test data
+Wendy|2023-01-23 06:45:00||
+Xavier|2023-01-24 07:00:00|345.67|Example data
+|2023-01-25 08:15:00|456.78|Test data
+Zack||567.89|Sample data
+Amy|2023-01-27 10:45:00||
+Brian|2023-01-28 11:00:00|789.01|Test data
+||890.12|Sample data
+Daniel|2023-01-30 13:30:00|901.23|Example data
+Elaine|2023-01-31 14:45:00||
+Fred||23.45|Sample data
+Gina|2023-02-02 16:15:00|34.56|
+Henry|2023-02-03 17:30:00||Test data
+Irene||56.78|Sample data
+Jack|2023-02-05 19:00:00|67.89|
+|||
+Karen|2023-02-06 20:15:00||Test data
+Larry||89.01|Sample data
+Mona|2023-02-08 22:45:00||
+Nick|2023-02-09 23:00:00|101.23|Test data
+Olivia||112.34|Sample data
+Paul|2023-02-11 01:30:00||
+|||
+Queenie|2023-02-12 02:45:00|234.56|Test data
+Robert||345.67|
+Sarah|2023-02-14 04:15:00||Example data
+Tom|2023-02-15 05:30:00|567.89|
